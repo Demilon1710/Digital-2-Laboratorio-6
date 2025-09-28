@@ -26,15 +26,23 @@
 #define pot1 27
 #define pot2 14
 #define ledB 12
-#define ledG 13
+#define ledY 13
 #define ledR 26
+#define pwmB 0
+#define pwmY 1
+#define pwmR 2
+#define freqPWM 50
+#define resPWM 12
 //******************************************/
 // Prototipos de funciones
 //******************************************/
-
+void initPWMB(void);
+void initPWMY(void);
+void initPWMR(void);
 //******************************************/
 // Variables globales
 //******************************************/
+uint32_t dutyCycle = 0;
 int rawPota; //Variable para el ADC crudo del potenciómetro 1
 int rawPotb; //Variable para el ADC crudo del potenciómetro 2
 int rojo;
@@ -66,6 +74,10 @@ lcd.print("Verde:");
 
 lcd.setCursor(11,0); //Imprimir a partir de la undécima columna en la primera fila
 lcd.print("Azul:");
+
+initPWMB(); //Llamar funciones para inicializar los PWMs
+initPWMY();
+initPWMR();
 
 
 }
@@ -124,8 +136,31 @@ void loop() {
   lcd.print(contador);
   delay(10);
 
-
+  ledcWrite(pwmB, contador);
+  ledcWrite(pwmY, verde);
+  ledcWrite(pwmR, rojo);
 }
 //******************************************/
 // Otras funciones
 //******************************************/
+void initPWMB(void){
+  //Paso 4 configuro el PWM
+  ledcSetup(pwmB, freqPWM, resPWM);
+
+  //Paso 5 configurar que GPIO va a salir el PWM
+  ledcAttachPin(ledB, pwmB);
+
+  //Paso 6 configurar ciclo de trabajo
+  ledcWrite(pwmB, 0);
+}
+void initPWMY(void){
+  //Paso 4 configuro el PWM
+  ledcSetup(pwmY, freqPWM, resPWM);
+  ledcAttachPin(ledY, pwmY);
+  ledcWrite(pwmY, 0);
+}
+void initPWMR(void){
+  ledcSetup(pwmR, freqPWM, resPWM);
+  ledcAttachPin(ledR, pwmR);
+  ledcWrite(pwmR, 0);
+}
