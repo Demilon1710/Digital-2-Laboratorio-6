@@ -1,0 +1,131 @@
+//******************************************/
+// Universidad del Valle de Guatemala
+// BE3029 - Electronica Digital 2
+// Javier Emilio de León Vargas
+// 12/09/2025
+// Laboratorio LCD
+// MCU: ESP32 dev kit 1.0
+//******************************************/
+//******************************************/
+// Librerias
+//******************************************/
+#include <Arduino.h>
+#include <stdint.h>
+//Paso 1. Incluir la librería LiquidCrystal
+#include <LiquidCrystal.h>
+//******************************************/
+// Definiciones
+//******************************************/
+//Paso 2. Definimos que pines vamos a utilizar
+#define rs 18
+#define en 21
+#define d4 5
+#define d5 19
+#define d6 22
+#define d7 23
+#define pot1 27
+#define pot2 14
+#define ledB 12
+#define ledG 13
+#define ledR 26
+//******************************************/
+// Prototipos de funciones
+//******************************************/
+
+//******************************************/
+// Variables globales
+//******************************************/
+int rawPota; //Variable para el ADC crudo del potenciómetro 1
+int rawPotb; //Variable para el ADC crudo del potenciómetro 2
+int rojo;
+int verde;
+volatile uint8_t contador; //Variable para el contador
+//Paso 3. Instanciar objeto LCD
+LiquidCrystal lcd(rs,en,d4,d5,d6,d7); 
+//******************************************/
+// ISRs Rutinas de Interrupcion
+//******************************************/
+//******************************************/
+// Configuracion
+//******************************************/
+void setup() {
+Serial.begin(115200);
+// put your setup code here, to run once:
+contador = 0;
+//Paso 4. Iniciar LCD
+delay(100);
+lcd.begin(16,2); //Columnas y filas a utilizar
+
+lcd.clear(); //Limpiar cualquier dato guardado al inicializar el LCD
+
+lcd.setCursor(0,0); //Imprimir a partir de la primera columna en la primera fila
+lcd.print("Rojo:");
+
+lcd.setCursor(5,0); //Imprimir a partir de la quinta columna en la primera fila
+lcd.print("Verde:");
+
+lcd.setCursor(11,0); //Imprimir a partir de la undécima columna en la primera fila
+lcd.print("Azul:");
+
+
+}
+//******************************************/
+// Loop Principal
+//******************************************/
+void loop() {
+  rawPota = analogRead(pot1); //Lecturas analógicas de los potenciómetros
+  rawPotb = analogRead(pot2);
+  
+  rojo = (rawPota*255)/4095; //Conversión de 12 bits a 8 bits
+  verde = (rawPotb*255)/4095;
+
+  Serial.print("Intensidad rojo: ");
+  Serial.print(rojo);
+  Serial.print(" ");
+  Serial.print("Intensidad verde: ");
+  Serial.println(verde);
+  Serial.print(" ");
+
+  if(Serial.available()){
+    char azul = Serial.read();
+
+    if (azul == '+'){
+      if (contador < 255){
+        contador++;
+      }
+    }
+    else if (azul == '-'){
+      if (contador > 0){
+        contador--;
+      }
+    }
+    Serial.print("Intensidad azul: ");
+    Serial.println(contador);
+  }
+
+  lcd.setCursor(0,1);
+  lcd.print("   "); //"Limpiar" valores que se sobrepasen al reducir el número
+  delay(10);
+  lcd.setCursor(0,1);
+  lcd.print(rojo); //Imprimir la variable en el LCD
+  delay(10);
+
+  lcd.setCursor(5,1);
+  lcd.print("   ");
+  delay(10);
+  lcd.setCursor(5,1);
+  lcd.print(verde);
+  delay(10);
+
+  lcd.setCursor(11,1);
+  lcd.print("   ");
+  delay(10);
+  lcd.setCursor(11,1);
+  lcd.print(contador);
+  delay(10);
+
+
+}
+//******************************************/
+// Otras funciones
+//******************************************/
