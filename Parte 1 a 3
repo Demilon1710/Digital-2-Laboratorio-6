@@ -17,35 +17,35 @@
 // Definiciones
 //******************************************/
 //Paso 2. Definimos que pines vamos a utilizar
-#define rs 18
+#define rs 18 //Pines que conectan el ESP32 con el LCD para 4 bits
 #define en 21
 #define d4 5
 #define d5 19
 #define d6 22
 #define d7 23
-#define pot1 27
+#define pot1 27 //Pines que conectan el ESP32 a los potenciómetros
 #define pot2 14
-#define ledB 12
+#define ledB 12 //Pines que conectan el ESP32 a los LEDs
 #define ledY 13
 #define ledR 26
-#define pwmB 0
+#define pwmB 0 //Canal inicial de los PWM
 #define pwmY 1
 #define pwmR 2
-#define freqPWM 50
-#define resPWM 12
+#define freqPWM 50 //Variable para la frecuencia de los PMW
+#define resPWM 12 //Variable para la resolución de los PWM
 //******************************************/
 // Prototipos de funciones
 //******************************************/
-void initPWMB(void);
+void initPWMB(void); //Funciones para inicializar los PWM
 void initPWMY(void);
 void initPWMR(void);
 //******************************************/
 // Variables globales
 //******************************************/
-uint32_t dutyCycle = 0;
+uint32_t dutyCycle = 0; //Variable para el ciclo de trabajo
 int rawPota; //Variable para el ADC crudo del potenciómetro 1
 int rawPotb; //Variable para el ADC crudo del potenciómetro 2
-int rojo;
+int rojo; //Variable para el ADC transformado
 int verde;
 volatile uint8_t contador; //Variable para el contador
 //Paso 3. Instanciar objeto LCD
@@ -91,23 +91,23 @@ void loop() {
   rojo = (rawPota*255)/4095; //Conversión de 12 bits a 8 bits
   verde = (rawPotb*255)/4095;
 
-  Serial.print("Intensidad rojo: ");
+  Serial.print("Intensidad rojo: "); //Impresión en el monitor serial
   Serial.print(rojo);
   Serial.print(" ");
   Serial.print("Intensidad verde: ");
   Serial.println(verde);
   Serial.print(" ");
 
-  if(Serial.available()){
-    char azul = Serial.read();
+  if(Serial.available()){ //Esperar un input en el monitor serial
+    char azul = Serial.read(); //Caracter que se lee en el monitor serial al introducirlo
 
     if (azul == '+'){
-      if (contador < 255){
+      if (contador < 255){ //Ciclo para no pasar de 255
         contador++;
       }
     }
     else if (azul == '-'){
-      if (contador > 0){
+      if (contador > 0){ //Ciclo para no pasar de 0
         contador--;
       }
     }
@@ -115,7 +115,7 @@ void loop() {
     Serial.println(contador);
   }
 
-  lcd.setCursor(0,1);
+  lcd.setCursor(0,1); //Posición inicial en el LCD
   lcd.print("   "); //"Limpiar" valores que se sobrepasen al reducir el número
   delay(10);
   lcd.setCursor(0,1);
@@ -136,7 +136,7 @@ void loop() {
   lcd.print(contador);
   delay(10);
 
-  ledcWrite(pwmB, contador);
+  ledcWrite(pwmB, contador); //Valor del PWM para los leds de acuerdo con los contadores de los potenciómetros y el contador del monitor
   ledcWrite(pwmY, verde);
   ledcWrite(pwmR, rojo);
 }
@@ -144,17 +144,17 @@ void loop() {
 // Otras funciones
 //******************************************/
 void initPWMB(void){
-  //Paso 4 configuro el PWM
+  //Configuro el PWM
   ledcSetup(pwmB, freqPWM, resPWM);
 
-  //Paso 5 configurar que GPIO va a salir el PWM
+  //Configurar que GPIO va a salir el PWM
   ledcAttachPin(ledB, pwmB);
 
-  //Paso 6 configurar ciclo de trabajo
+  //Configurar ciclo de trabajo
   ledcWrite(pwmB, 0);
 }
 void initPWMY(void){
-  //Paso 4 configuro el PWM
+  //Configuro el PWM
   ledcSetup(pwmY, freqPWM, resPWM);
   ledcAttachPin(ledY, pwmY);
   ledcWrite(pwmY, 0);
